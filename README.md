@@ -22,8 +22,10 @@ https://components.ifsc-climbing.org/results-api.php?api=overall_r_result_comple
 _(change `1187` to your event ID)_
 
 From there you grab the ID from `categry_rounds` you would like to follow:
-<img src="img/screen2.png"/>
-Here it is `6376`
+<img src="img/screen2.png"/><br/>
+_here it is `6376`_
+
+Put that number into line 1 in `index.js`.
 
 ## TODO
 * extend the script so you can select the event and category without using the page!

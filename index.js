@@ -1,4 +1,4 @@
-const category_id = 6377
+const category_id = 6377;
 const urlCompetition = "https://components.ifsc-climbing.org/results-api.php?api=event_full_results&result_url=/api/v1/category_rounds/" + category_id + "/results";
 const fetch = require('node-fetch');
 const colors = require('colors');
