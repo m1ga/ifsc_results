@@ -1,16 +1,84 @@
-const category_id = 6377;
-const urlCompetition = "https://components.ifsc-climbing.org/results-api.php?api=event_full_results&result_url=/api/v1/category_rounds/" + category_id + "/results";
 const fetch = require('node-fetch');
 const colors = require('colors');
+let category_id = -1;
+const readline = require('readline').createInterface({
+	input: process.stdin,
+	output: process.stdout
+});
 let settings = {
 	method: "Get"
 };
 
-function getResults(url) {
+function clearOutput() {
+	process.stdout.write("\u001b[3J\u001b[2J\u001b[1J");
+	console.clear();
+}
+
+function getLeagues() {
+	clearOutput()
+	const url = "https://components.ifsc-climbing.org/results-api.php?api=event_full_results&result_url=/api/v1/";
+	let leagueData = [];
+
 	fetch(url, settings)
 		.then(res => res.json())
 		.then((json) => {
-			console.clear();
+			json.current.leagues.forEach((leagues, i) => {
+				console.log(" " + colors.green(i) + ": " + leagues.name);
+				leagueData.push(leagues.url);
+			});
+
+			readline.question('Which event: ', eventId => {
+				// readline.close();
+				getEvents(leagueData[eventId]);
+			});
+
+		})
+}
+
+function getEvents(urlPart) {
+	clearOutput();
+	const url = "https://components.ifsc-climbing.org/results-api.php?api=event_full_results&result_url=" + urlPart;
+	let eventData = [];
+
+	fetch(url, settings)
+		.then(res => res.json())
+		.then((json) => {
+			json.events.forEach((event, i) => {
+				console.log(" " + colors.bold(event.event));
+				event.d_cats.forEach((cats, i) => {
+					console.log("\t" + cats.name);
+					cats.category_rounds.forEach((round, i) => {
+						console.log("\t  " + colors.green(eventData.length) + ": " + round.name);
+						eventData.push(round.category_round_id);
+					});
+				});
+				console.log("\n");
+			});
+			readline.question('Which round: ', eventId => {
+				readline.close();
+				category_id = eventData[eventId];
+				resultLoop()
+			});
+		})
+}
+
+function resultLoop() {
+	if (category_id != -1) {
+		getResults();
+		setInterval(function() {
+			getResults();
+		}, 60 * 1000);
+	} else {
+		console.log("category id not found :(");
+	}
+}
+
+function getResults() {
+	const url = "https://components.ifsc-climbing.org/results-api.php?api=event_full_results&result_url=/api/v1/category_rounds/" + category_id + "/results";
+	fetch(url, settings)
+		.then(res => res.json())
+		.then((json) => {
+			clearOutput();
 			console.log("  " + json.discipline + " " + json.category + " " + json.round);
 			if (json.ranking) {
 				json.ranking.forEach((athelete, i) => {
@@ -43,7 +111,4 @@ function getResults(url) {
 		});
 }
 
-getResults(urlCompetition);
-setInterval(function() {
-	getResults(urlCompetition);
-}, 60 * 1000);
+getLeagues();
