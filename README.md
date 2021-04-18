@@ -15,10 +15,10 @@ The screen will refresh every minute with new results.
 
 ## Change event
 
-To get the event ID you currently have to go to:
-https://www.ifsc-climbing.org/index.php/world-competition/calendar
-get the `event_id` (e.g. `1187`) and open this URL with your event id:
-https://components.ifsc-climbing.org/results-api.php?api=overall_r_result_complete&event_id=1187&category_id=3
+To get the event ID you currently have to go to:<br/>
+https://www.ifsc-climbing.org/index.php/world-competition/calendar<br/>
+get the `event_id` (e.g. `1187`) and open this URL with your event id:<br/>
+https://components.ifsc-climbing.org/results-api.php?api=overall_r_result_complete&event_id=1187&category_id=3<br/>
 _(change `1187` to your event ID)_
 
 From there you grab the ID from `categry_rounds` you would like to follow:
