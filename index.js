@@ -92,6 +92,7 @@ function getResults() {
 			clearOutput();
 			console.log(json.discipline + " " + json.category + " " + json.round);
 			if (json.ranking) {
+				let pos = 1;
 				json.ranking.forEach((athelete, i) => {
 					let name = athelete.firstname + " " + athelete.lastname;
 					let route = "";
@@ -99,6 +100,7 @@ function getResults() {
 					let zoneCount = 0;
 					if (athelete.active) name = colors.yellow(name);
 					if (athelete.ascents) {
+						let isPending = false;
 						athelete.ascents.forEach((ascents, i) => {
 							let _tries = ascents.top_tries || 0;
 							let _zones = ascents.zone_tries || 0;
@@ -106,14 +108,19 @@ function getResults() {
 							if (ascents.top) topCount++;
 
 							let currentRoute = "\n  " + ascents.route_name + "\tZone: " + ((ascents.zone) ? colors.green("yes") : "no") + " (" + _zones + " tries)\t|\tTop: " + ((ascents.top) ? colors.green("yes") : "no") + " (" + _tries+ " tries)";
-							if (ascents.status == "pending") {
+							if (ascents.status == "pending" || isPending) {
 								currentRoute = colors.grey(currentRoute);
+								isPending = true;
+							}
+							if (ascents.status == "active") {
+								isPending = true;
 							}
 							route += currentRoute;
 						});
 					}
 
-					console.log("\n " + name + " | T:" + topCount + " | Z:" + zoneCount + route);
+					console.log("\n " + pos + ": " +name + " | T:" + topCount + " | Z:" + zoneCount + route);
+					pos++;
 				});
 			} else {
 				console.log("\n  - no ranking yet -");
