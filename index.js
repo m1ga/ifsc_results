@@ -23,12 +23,14 @@ function getLeagues() {
 		.then(res => res.json())
 		.then((json) => {
 			json.current.leagues.forEach((leagues, i) => {
+				if (i < 10) {
+					i = " " + i;
+				}
 				console.log(" " + colors.green(i) + ": " + leagues.name);
 				leagueData.push(leagues.url);
 			});
 
 			readline.question('Which event: ', eventId => {
-				// readline.close();
 				getEvents(leagueData[eventId]);
 			});
 
@@ -46,13 +48,22 @@ function getEvents(urlPart) {
 			json.events.forEach((event, i) => {
 				console.log(" " + colors.bold(event.event));
 				event.d_cats.forEach((cats, i) => {
-					console.log("\t" + cats.name);
 					cats.category_rounds.forEach((round, i) => {
-						console.log("\t  " + colors.green(eventData.length) + ": " + round.name);
+						let eventNumber = eventData.length;
+						let isActive = false;
+						if (eventNumber < 10) {
+							eventNumber = " " + eventNumber;
+						}
+
+						if (round.status == "active") {
+							isActive = true;
+							console.log("\t  " + colors.green(eventNumber) + ": " + colors.green(cats.name + " | " + round.name));
+						} else {
+							console.log("\t  " + colors.green(eventNumber) + ": " + cats.name + " | " + round.name);
+						}
 						eventData.push(round.category_round_id);
 					});
 				});
-				console.log("\n");
 			});
 			readline.question('Which round: ', eventId => {
 				readline.close();
@@ -79,7 +90,7 @@ function getResults() {
 		.then(res => res.json())
 		.then((json) => {
 			clearOutput();
-			console.log("  " + json.discipline + " " + json.category + " " + json.round);
+			console.log(json.discipline + " " + json.category + " " + json.round);
 			if (json.ranking) {
 				json.ranking.forEach((athelete, i) => {
 					let name = athelete.firstname + " " + athelete.lastname;
@@ -94,7 +105,7 @@ function getResults() {
 							if (ascents.zone) zoneCount++;
 							if (ascents.top) topCount++;
 
-							let currentRoute = "\n    | " + ascents.route_name + " Zone: " + ((ascents.zone) ? colors.green("yes") : "no") + "\ttries: " + _zones + "\t| Top: " + ((ascents.top) ? colors.green("yes") : "no") + "\ttries: " + _tries;
+							let currentRoute = "\n  " + ascents.route_name + "\tZone: " + ((ascents.zone) ? colors.green("yes") : "no") + " (" + _zones + " tries)\t|\tTop: " + ((ascents.top) ? colors.green("yes") : "no") + " (" + _tries+ " tries)";
 							if (ascents.status == "pending") {
 								currentRoute = colors.grey(currentRoute);
 							}
@@ -102,9 +113,8 @@ function getResults() {
 						});
 					}
 
-					console.log("\n  " + name + " | T:" + topCount + " | Z:" + zoneCount + route);
+					console.log("\n " + name + " | T:" + topCount + " | Z:" + zoneCount + route);
 				});
-				console.log("-----------");
 			} else {
 				console.log("\n  - no ranking yet -");
 			}
