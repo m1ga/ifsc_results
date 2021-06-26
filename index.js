@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const colors = require('colors');
+var columns = require('columns').create()
 let category_id = -1;
 const readline = require('readline').createInterface({
 	input: process.stdin,
@@ -90,6 +91,21 @@ function getResults() {
 		.then(res => res.json())
 		.then((json) => {
 			clearOutput();
+			var a = columns.addColumn('c1', {
+				header: false,
+				raw: true
+			})
+			var b = columns.addColumn('c2', {
+				header: false,
+				raw: true
+			})
+			var c = columns.addColumn('c3', {
+				header: false,
+				raw: true
+			})
+			var count = 0;
+			var currentColumn = a;
+
 			console.log(json.discipline + " " + json.category + " " + json.round);
 			if (json.ranking) {
 				let pos = 1;
@@ -99,6 +115,7 @@ function getResults() {
 					let topCount = 0;
 					let zoneCount = 0;
 					if (athelete.active) name = colors.yellow(name);
+					let country = athelete.country;
 					if (athelete.ascents) {
 						let isPending = false;
 						athelete.ascents.forEach((ascents, i) => {
@@ -106,8 +123,7 @@ function getResults() {
 							let _zones = ascents.zone_tries || 0;
 							if (ascents.zone) zoneCount++;
 							if (ascents.top) topCount++;
-
-							let currentRoute = "\n  " + ascents.route_name + "\tZone: " + ((ascents.zone) ? colors.green("yes") : "no") + " (" + _zones + " tries)\t|\tTop: " + ((ascents.top) ? colors.green("yes") : "no") + " (" + _tries+ " tries)";
+							let currentRoute = "\n  " + ascents.route_name + "\tZone: " + ((ascents.zone) ? colors.green("yes") : "no") + " (" + _zones + " tries)\t|\tTop: " + ((ascents.top) ? colors.green("yes") : "no") + " (" + _tries + " tries)";
 							if (ascents.status == "pending" || isPending) {
 								currentRoute = colors.grey(currentRoute);
 								isPending = true;
@@ -116,14 +132,24 @@ function getResults() {
 								isPending = true;
 							}
 							route += currentRoute;
+
+
 						});
 					}
 
-					console.log("\n " + pos + ": " +name + " | T:" + topCount + " | Z:" + zoneCount + route);
+					currentColumn.write("\n " + pos + ": " + name + " " + country + " (T: " + topCount + ", Z: " + zoneCount+")" + route + "\n ");
 					pos++;
+
+					++count;
+					if (count >= 16) {
+						currentColumn = c;
+					} else if (count >= 8) {
+						currentColumn = b;
+					}
+
 				});
 			} else {
-				console.log("\n  - no ranking yet -");
+				currentColumn.write("\n  - no ranking yet -");
 			}
 		});
 }
