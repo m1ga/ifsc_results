@@ -1,6 +1,5 @@
 const fetch = require('node-fetch');
 const colors = require('colors');
-var columns = require('columns').create()
 let category_id = -1;
 const readline = require('readline').createInterface({
 	input: process.stdin,
@@ -91,21 +90,25 @@ function getResults() {
 		.then(res => res.json())
 		.then((json) => {
 			clearOutput();
-			var a = columns.addColumn('c1', {
+			let columns = require('columns').create();
+			let a = columns.addColumn('c1', {
 				header: false,
 				raw: true
 			})
-			var b = columns.addColumn('c2', {
+			let b = columns.addColumn('c2', {
 				header: false,
 				raw: true
 			})
-			var c = columns.addColumn('c3', {
+			let c = columns.addColumn('c3', {
 				header: false,
 				raw: true
 			})
-			var count = 0;
-			var currentColumn = a;
-
+			let count = 0;
+			let currentColumn = a;
+			let isLead = false;
+			if (json.discipline.indexOf("Lead") > -1) {
+				isLead = true;
+			}
 			console.log(json.discipline + " " + json.category + " " + json.round);
 			if (json.ranking) {
 				let pos = 1;
@@ -114,6 +117,7 @@ function getResults() {
 					let route = "";
 					let topCount = 0;
 					let zoneCount = 0;
+					let score = "";
 					if (athelete.active) name = colors.yellow(name);
 					let country = athelete.country;
 					if (athelete.ascents) {
@@ -123,7 +127,13 @@ function getResults() {
 							let _zones = ascents.zone_tries || 0;
 							if (ascents.zone) zoneCount++;
 							if (ascents.top) topCount++;
-							let currentRoute = "\n  " + ascents.route_name + "\tZone: " + ((ascents.zone) ? colors.green("yes") : "no") + " (" + _zones + " tries)\t|\tTop: " + ((ascents.top) ? colors.green("yes") : "no") + " (" + _tries + " tries)";
+							if (ascents.score) score = "\n  Score: " + ascents.score;
+							let currentRoute = "";
+							if (isLead) {
+								currentRoute = score;
+							} else {
+								currentRoute = "\n  " + ascents.route_name + "\tZone: " + ((ascents.zone) ? colors.green("yes") : "no") + " (" + _zones + " tries)\t|\tTop: " + ((ascents.top) ? colors.green("yes") : "no") + " (" + _tries + " tries)";
+							}
 							if (ascents.status == "pending" || isPending) {
 								currentRoute = colors.grey(currentRoute);
 								isPending = true;
@@ -132,12 +142,11 @@ function getResults() {
 								isPending = true;
 							}
 							route += currentRoute;
-
-
 						});
 					}
 
-					currentColumn.write("\n " + pos + ": " + name + " " + country + " (T: " + topCount + ", Z: " + zoneCount+")" + route + "\n ");
+					let boulderStats = (!isLead) ? " (T: " + topCount + ", Z: " + zoneCount + ")" : "";
+					currentColumn.write("\n " + pos + ": " + name + " " + country + boulderStats + route + "\n ");
 					pos++;
 
 					++count;
@@ -149,7 +158,7 @@ function getResults() {
 
 				});
 			} else {
-				currentColumn.write("\n  - no ranking yet -");
+				// currentColumn.write("\n  - no ranking yet -");
 			}
 		});
 }
