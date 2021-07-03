@@ -9,6 +9,17 @@ let settings = {
 	method: "Get"
 };
 
+let paramEventId = -1;
+let paramRoundId = -1;
+
+var myArgs = process.argv.slice(2);
+if (myArgs[0]) {
+	paramEventId = myArgs[0];
+}
+if (myArgs[1]) {
+	paramRoundId = myArgs[1];
+}
+
 function clearOutput() {
 	process.stdout.write("\u001b[3J\u001b[2J\u001b[1J");
 	console.clear();
@@ -26,13 +37,17 @@ function getLeagues() {
 				if (i < 10) {
 					i = " " + i;
 				}
-				console.log(" " + colors.green(i) + ": " + leagues.name);
+				if (paramEventId == -1) console.log(" " + colors.green(i) + ": " + leagues.name);
 				leagueData.push(leagues.url);
 			});
 
-			readline.question('Which event: ', eventId => {
-				getEvents(leagueData[eventId]);
-			});
+			if (paramEventId == -1) {
+				readline.question('Which event: ', eventId => {
+					getEvents(leagueData[eventId]);
+				});
+			} else {
+				getEvents(leagueData[paramEventId]);
+			}
 
 		})
 }
@@ -46,7 +61,7 @@ function getEvents(urlPart) {
 		.then(res => res.json())
 		.then((json) => {
 			json.events.forEach((event, i) => {
-				console.log(" " + colors.bold(event.event));
+				if (paramRoundId == -1) console.log(" " + colors.bold(event.event));
 				event.d_cats.forEach((cats, i) => {
 					cats.category_rounds.forEach((round, i) => {
 						let eventNumber = eventData.length;
@@ -55,21 +70,28 @@ function getEvents(urlPart) {
 							eventNumber = " " + eventNumber;
 						}
 
-						if (round.status == "active") {
-							isActive = true;
-							console.log("\t  " + colors.green(eventNumber) + ": " + colors.green(cats.name + " | " + round.name));
-						} else {
-							console.log("\t  " + colors.green(eventNumber) + ": " + cats.name + " | " + round.name);
+						if (paramRoundId == -1) {
+							if (round.status == "active") {
+								isActive = true;
+								console.log("\t  " + colors.green(eventNumber) + ": " + colors.green(cats.name + " | " + round.name));
+							} else {
+								console.log("\t  " + colors.green(eventNumber) + ": " + cats.name + " | " + round.name);
+							}
 						}
 						eventData.push(round.category_round_id);
 					});
 				});
 			});
-			readline.question('Which round: ', eventId => {
-				readline.close();
-				category_id = eventData[eventId];
+			if (paramRoundId == -1) {
+				readline.question('Which round: ', roundId => {
+					readline.close();
+					category_id = eventData[roundId];
+					resultLoop()
+				});
+			} else {
+				category_id = eventData[paramRoundId];
 				resultLoop()
-			});
+			}
 		})
 }
 
@@ -117,7 +139,7 @@ function getResults() {
 					let route = "";
 					let topCount = 0;
 					let zoneCount = 0;
-					let score = "";
+					let score = "\n- no score yet -";
 					if (athelete.active) name = colors.yellow(name);
 					let country = athelete.country;
 					if (athelete.ascents) {
@@ -144,7 +166,6 @@ function getResults() {
 							route += currentRoute;
 						});
 					}
-
 					let boulderStats = (!isLead) ? " (T: " + topCount + ", Z: " + zoneCount + ")" : "";
 					currentColumn.write("\n " + pos + ": " + name + " " + country + boulderStats + route + "\n ");
 					pos++;
