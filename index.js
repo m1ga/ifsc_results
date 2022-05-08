@@ -60,7 +60,9 @@ function getEvents(urlPart) {
 	fetch(url, settings)
 		.then(res => res.json())
 		.then((json) => {
+			let activeRows = "";
 			json.events.forEach((event, i) => {
+
 				if (paramRoundId == -1) console.log(" " + colors.bold(event.event));
 				event.d_cats.forEach((cats, i) => {
 					cats.category_rounds.forEach((round, i) => {
@@ -74,6 +76,7 @@ function getEvents(urlPart) {
 							if (round.status == "active") {
 								isActive = true;
 								console.log("\t  " + colors.green(eventNumber) + ": " + colors.green(cats.name + " | " + round.name));
+								activeRows += "\t" + colors.bold(eventNumber + ": " + cats.name + " | " + round.name) + " (" + event.event + ")\n";
 							} else {
 								console.log("\t  " + colors.green(eventNumber) + ": " + cats.name + " | " + round.name);
 							}
@@ -82,6 +85,8 @@ function getEvents(urlPart) {
 					});
 				});
 			});
+			console.log("\n Currently running: ");
+			console.log(activeRows);
 			if (paramRoundId == -1) {
 				readline.question('Which round: ', roundId => {
 					readline.close();
